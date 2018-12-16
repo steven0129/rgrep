@@ -14,21 +14,35 @@ int main(int argc, char *argv[]) {
     }
 
     FILE* file = fopen("bible.tsv", "r");
-    char* pattern = "願主耶穌的恩惠";
+    char* pattern = "";
+    int k_tolerence = 2;
+
+    for(int i=1; i<argc; i++) {
+        if(strcmp(argv[i], "-k")==0) k_tolerence = atoi(argv[i+1]);
+        else if(strcmp(argv[i], "-p")==0) pattern = strdup(argv[i+1]);
+        else if(strcmp(argv[i], "-f")==0) file = fopen(argv[i+1], "r");
+    }
+
+    if(strcmp(pattern, "")==0) {
+        printf("rgrep -p 'something you want to find'\n");
+        return 0;
+    }
+
     char line[1000];
     while(fgets(line, sizeof(line), file)) {
-        int err = unistrcmp(line, pattern, 2);
-        if(err != -1) printf("%d    %s", err, line);
+        int err = unistrcmp(line, pattern, k_tolerence);
+        if(err != -1) printf("%s", line);
     }
 }
 
 int unistrcmp(char* text, char* pattern, int k) {
     int A[strlen(pattern)], B[strlen(pattern)];
+    int jj;
 
     for(int i = 0; i < strlen(pattern); i++) B[i] = i;
 
     for(int i = 0; i < strlen(text) - 1;) {
-        int jj = 1;
+        jj = 1;
 
         for(int j = 0; j < strlen(pattern) - 1;) {
             A[0] = 0;
@@ -47,7 +61,6 @@ int unistrcmp(char* text, char* pattern, int k) {
                 for(int k=0; k<3; k++) {
                     t[k] = text[i+k];
                     p[k] = pattern[j+k];
-                    
                 }
 
                 error = !unichrcmp(t, p);
@@ -58,7 +71,7 @@ int unistrcmp(char* text, char* pattern, int k) {
             jj++;
         }
 
-        if(A[jj - 1] <= k) return A[jj - 1];
+        if(A[jj-1] <= k) return A[jj-1];
         for(int j=0; j < jj; j++) B[j] = A[j];
         
         if(is_ascii(text[i])) i++;
@@ -69,5 +82,5 @@ int unistrcmp(char* text, char* pattern, int k) {
 }
 
 int min(int a, int b) {
-    return a<b ? a : b;
+    return a < b ? a : b;
 }
