@@ -13,19 +13,26 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    FILE* file = fopen("bible.tsv", "r");
+    FILE* file;
+    char* filename = "";
     char* pattern = "";
     int k_tolerence = 2;
 
     for(int i=1; i<argc; i++) {
         if(strcmp(argv[i], "-k")==0) k_tolerence = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-p")==0) pattern = strdup(argv[i+1]);
-        else if(strcmp(argv[i], "-f")==0) file = fopen(argv[i+1], "r");
+        else if(strcmp(argv[i], "-f")==0) filename = strdup(argv[i+1]);
     }
 
     if(strcmp(pattern, "")==0) {
         printf("./rgrep -p 'something you want to find'\n");
         return 0;
+    }
+
+    if(strcmp(filename, "")==0) {
+        file = stdin;
+    } else {
+        file = fopen(filename, "r");
     }
 
     char line[1000];
