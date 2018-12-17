@@ -1,5 +1,5 @@
 const express = require('express')
-const execFile = require('child_process').execFile
+const exec = require('child_process').exec
 const path = require('path')
 
 const app = express()
@@ -14,12 +14,25 @@ app.use((req, res, next) => {
 })
 
 app.get('/data', (req, res) => {
-    execFile('./rgrep', ['-k', '2', '-f', 'bible.tsv', '-p', req.query.q], (err, stdout, stderr) => {
+    let k = '2'
+    
+    queries = req.query.q.split(' ')
+    if(queries[0].length <= 2) k = '0'
+    args = ['./rgrep', '-k', k, '-f', 'bible.tsv', '-p', queries[0]]
+    
+    for(let i = 1; i < queries.length; i++) {
+        let k = '2'
+        if(queries[i].length <= 2) k = '0'
+        args.push(...['|', './rgrep', '-k', k, '-p', queries[i]])
+    }
+
+    console.log(args.join(' '))
+
+    exec(args.join(' '), (err, stdout, stderr) => {
         if(err) {
             console.error('stderr', stderr)
         }
 
-        console.log(`GET: ${req.query.q}`)
         res.send(stdout.split('\n'))
     })
 })
