@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(strcmp(pattern, "")==0) {
-        printf("rgrep -p 'something you want to find'\n");
+        printf("./rgrep -p 'something you want to find'\n");
         return 0;
     }
 
@@ -37,12 +37,10 @@ int main(int argc, char *argv[]) {
 
 int unistrcmp(char* text, char* pattern, int k) {
     int A[strlen(pattern)], B[strlen(pattern)];
-    int jj;
 
     for(int i = 0; i < strlen(pattern); i++) B[i] = i;
-
     for(int i = 0; i < strlen(text) - 1;) {
-        jj = 1;
+        int jj = 1;
 
         for(int j = 0; j < strlen(pattern) - 1;) {
             A[0] = 0;
