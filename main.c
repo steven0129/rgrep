@@ -16,16 +16,22 @@ int main(int argc, char *argv[]) {
     FILE* file;
     char* filename = "";
     char* pattern = "";
+    char* neg = "";
+    char* key = "@content";
+    char* delimeter = "@record";
     int k_tolerence = 2;
 
     for(int i=1; i<argc; i++) {
-        if(strcmp(argv[i], "-k")==0) k_tolerence = atoi(argv[i+1]);
+        if(strcmp(argv[i], "-e")==0) k_tolerence = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-p")==0) pattern = strdup(argv[i+1]);
+        else if(strcmp(argv[i], "-n")==0) neg = strdup(argv[i+1]);
         else if(strcmp(argv[i], "-f")==0) filename = strdup(argv[i+1]);
+        else if(strcmp(argv[i], "-k")==0) key = strdup(argv[i+1]);
+        else if(strcmp(argv[i], "-d")==0) delimeter = strdup(argv[i+1]);
     }
 
     if(strcmp(pattern, "")==0) {
-        printf("./rgrep -p 'something you want to find'\n");
+        printf("./rgrep -p 'something you want to find' -f 'your file name' -e k_error\n");
         return 0;
     }
 
@@ -35,10 +41,55 @@ int main(int argc, char *argv[]) {
         file = fopen(filename, "r");
     }
 
-    char line[1000];
-    while(fgets(line, sizeof(line), file)) {
-        int err = unistrcmp(line, pattern, k_tolerence);
-        if(err != -1) printf("%s", line);
+    fseek(file, 0, SEEK_END);
+    int fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char rec[4000];
+    char* recs[40000];
+    char* target[40000];
+    int counter = 0, idx = 0, tid = 0;
+    while(1) {
+        for(int i=0; i<4000; i++)  rec[i] = fgetc(file);
+        char* head = strdup(rec);
+        
+        while(strstr(head, delimeter) != NULL && strstr(head+7, delimeter) != NULL) {
+            head = strstr(head, delimeter);
+            char* nextRec = strstr(head+7, delimeter);
+            char* curr = malloc(nextRec - head + 1);
+            strncpy(curr, head, nextRec - head);
+            curr[nextRec - head] = '\0';
+            counter += strlen(curr);
+            head = nextRec;
+            recs[idx++] = strdup(curr);
+            free(curr);
+        }
+        
+        if(feof(file)) {
+            head[fileSize - counter] = '\0';
+            recs[idx++] = strdup(head);
+            break;
+        } else fseek(file, counter, SEEK_SET);
+    }
+
+    for(int i=0; i<idx; i++) {
+        char* content = strstr(recs[i], key) + strlen(key) + 1;
+        int err = unistrcmp(content, pattern, k_tolerence);
+        if(err != -1) target[tid++] = strdup(recs[i]);
+    }
+
+    if(neg[0] != '\0') {
+        int temp = tid;
+        tid = 0;
+        for(int i=0; i<temp; i++) {
+            char* content = strstr(target[i], key) + strlen(key) + 1;
+            int err = unistrcmp(content, neg, k_tolerence);
+            if(err == -1) target[tid++] = strdup(target[i]);
+        }
+    }
+
+    for(int i=0; i<tid; i++) {
+        printf("%s----------------\n", target[i]);
     }
 }
 
