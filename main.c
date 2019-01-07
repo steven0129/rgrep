@@ -4,13 +4,16 @@
 #include<string.h>
 #include"unicmp.h"
 
-int min(int, int);
-int unistrcmp(char*, char*, int);
+
 
 struct TARGET {
     int err;
     char* data;
 };
+
+int MIN(int, int);
+int unistrcmp(char*, char*, int);
+void insertionSort(struct TARGET*, int);
 
 int main(int argc, char *argv[]) {
     if (!setlocale(LC_ALL, "zh_TW.UTF-8")) {
@@ -100,6 +103,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    insertionSort(targets, tid);
+
     for(int i=0; i<tid; i++) {
         printf("%s", targets[i].data);
     }
@@ -107,6 +112,7 @@ int main(int argc, char *argv[]) {
 
 int unistrcmp(char* text, char* pattern, int k) {
     int A[strlen(pattern)], B[strlen(pattern)];
+    int match = 0;
 
     for(int i = 0; i < strlen(pattern); i++) B[i] = i;
     for(int i = 0; i < strlen(text) - 1;) {
@@ -135,11 +141,12 @@ int unistrcmp(char* text, char* pattern, int k) {
                 j+=3;
             }
 
-            A[jj] = min( min(A[jj-1] + 1, B[jj] + 1) , B[jj-1] + error );
+            A[jj] = MIN( MIN(A[jj-1] + 1, B[jj] + 1) , B[jj-1] + error );
             jj++;
         }
 
-        if(A[jj-1] <= k) return A[jj-1];
+        if(A[jj-1] <= k) match = 1;
+        if(match == 1 && A[jj-1] > B[jj-1]) return B[jj-1];
         for(int j=0; j < jj; j++) B[j] = A[j];
         
         if(is_ascii(text[i])) i++;
@@ -149,6 +156,22 @@ int unistrcmp(char* text, char* pattern, int k) {
     return -1;
 }
 
-int min(int a, int b) {
+int MIN(int a, int b) {
     return a < b ? a : b;
+}
+
+void insertionSort(struct TARGET* arr, int size) { 
+   struct TARGET key;
+   int j; 
+   for (int i = 1; i < size; i++) { 
+       key = arr[i]; 
+       j = i-1; 
+
+       while (j >= 0 && arr[j].err > key.err) { 
+           arr[j+1] = arr[j]; 
+           j = j-1; 
+       }
+       
+       arr[j+1] = key; 
+   }
 }
