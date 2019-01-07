@@ -7,6 +7,11 @@
 int min(int, int);
 int unistrcmp(char*, char*, int);
 
+struct TARGET {
+    int err;
+    char* data;
+};
+
 int main(int argc, char *argv[]) {
     if (!setlocale(LC_ALL, "zh_TW.UTF-8")) {
         fprintf(stderr, "Error:Please check LANG, LC_CTYPE, LC_ALL.\n");
@@ -48,6 +53,7 @@ int main(int argc, char *argv[]) {
     char rec[4000];
     char* recs[40000];
     char* target[40000];
+    struct TARGET targets[40000];
     int counter = 0, idx = 0, tid = 0;
     while(1) {
         for(int i=0; i<4000; i++)  rec[i] = fgetc(file);
@@ -75,21 +81,27 @@ int main(int argc, char *argv[]) {
     for(int i=0; i<idx; i++) {
         char* content = strstr(recs[i], key) + strlen(key) + 1;
         int err = unistrcmp(content, pattern, k_tolerence);
-        if(err != -1) target[tid++] = strdup(recs[i]);
+        if(err != -1) {
+            targets[tid].err = err;
+            targets[tid++].data = strdup(recs[i]);
+        }
     }
 
     if(neg[0] != '\0') {
         int temp = tid;
         tid = 0;
         for(int i=0; i<temp; i++) {
-            char* content = strstr(target[i], key) + strlen(key) + 1;
+            char* content = strstr(targets[i].data, key) + strlen(key) + 1;
             int err = unistrcmp(content, neg, k_tolerence);
-            if(err == -1) target[tid++] = strdup(target[i]);
+            if(err == -1) {
+                targets[tid].err = err;
+                targets[tid++].data = strdup(targets[i].data);
+            }
         }
     }
 
     for(int i=0; i<tid; i++) {
-        printf("%s", target[i]);
+        printf("%s", targets[i].data);
     }
 }
 
