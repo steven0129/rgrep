@@ -37,10 +37,7 @@ app.get('/data', (req, res) => {
     console.log(args.join(' '))
 
     exec(args.join(' '), (err, stdout, stderr) => {
-        if(err) {
-            console.error('stderr', stderr)
-        }
-
+        if(err) console.error('stderr', stderr)
         let result = stdout.split('@record')
         result.shift()
         res.send(result)
