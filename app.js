@@ -14,16 +14,24 @@ app.use((req, res, next) => {
 })
 
 app.get('/data', (req, res) => {
-    let k = '2'
+    let k = '1'
     
     queries = req.query.q.split(' ')
     if(queries[0].length <= 2) k = '0'
-    args = ['./rgrep', '-k', k, '-f', 'bible.tsv', '-p', queries[0]]
+    let args = []
+
+    if(!queries[0].includes('-'))
+        args = ['./rgrep', '-e', k, '-f', 'bible.rec', '-p', queries[0]]
+    else
+        args = ['./rgrep', '-e', k, '-f', 'bible.rec', '-p', queries[0].split('-')[0], '-n', queries[0].split('-')[1]]
     
     for(let i = 1; i < queries.length; i++) {
-        let k = '2'
+        let k = '1'
         if(queries[i].length <= 2) k = '0'
-        args.push(...['|', './rgrep', '-k', k, '-p', queries[i]])
+        if(!queries[i].includes('-'))
+            args.push(...['|', './rgrep', '-e', k, '-p', queries[i]])
+        else
+            args.push(...['|', './rgrep', '-e', k, '-p', queries[i].split('-')[0], '-n', queries[i].split('-')[1]])
     }
 
     console.log(args.join(' '))
@@ -33,7 +41,9 @@ app.get('/data', (req, res) => {
             console.error('stderr', stderr)
         }
 
-        res.send(stdout.split('\n'))
+        let result = stdout.split('@record')
+        result.shift()
+        res.send(result)
     })
 })
 

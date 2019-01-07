@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     }
 
     for(int i=0; i<tid; i++) {
-        printf("%s----------------\n", target[i]);
+        printf("%s", target[i]);
     }
 }
 
